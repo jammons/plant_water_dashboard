@@ -1,7 +1,7 @@
 import explorerhat
 import sqlite3
 import time
-from config import DATABASE_LOGIN
+from config import DATABASE_LOGIN, WATERING_TIME, DRYNESS_THRESHOLD
 
 def read_water():
     TEMPLATE = '''INSERT INTO schedule(date, voltage) VALUES(datetime('now'), ?)'''
@@ -14,16 +14,15 @@ def read_water():
     return voltage
 
 def water_plant(water_time : int = 10):
-    TEMPLATE = '''INSERT INTO watered_schedule VALUES(datetime('now'))'''
-
-    explorerhat.output[0].on()
     explorerhat.light[0].on()
+    explorerhat.motor.one.forwards(100)
     
     time.sleep(water_time)
     
-    explorerhat.output[0].off()
+    explorerhat.motor.one.stop()
     explorerhat.light[0].off()
 
+    TEMPLATE = '''INSERT INTO watered_schedule VALUES(datetime('now'))'''
     with sqlite3.connect(DATABASE_LOGIN) as connection:
         cursor = connection.cursor()
         cursor.execute(TEMPLATE)
@@ -31,5 +30,11 @@ def water_plant(water_time : int = 10):
 if __name__ == '__main__':
     voltage = read_water()
 
-    if voltage > 0.25:
-        water_plant()
+    print("Voltage: {}".format(voltage))
+
+    if voltage < DRYNESS_THRESHOLD:
+        if voltage < 0.01:
+            print("ERROR: Sensor not working")
+        else:
+            print("Watering Plant")
+            water_plant(WATERING_TIME)

@@ -1,6 +1,7 @@
 GRAPH_LENGTH = 30
 DATABASE_LOGIN = '/home/pi/code/plant_water_dashboard/water_database.db'
 DRYNESS_THRESHOLD = 2.0
+WATERING_TIME = 4
 
 WATERED_SCHEDULE_TABLE = '''
 CREATE TABLE IF NOT EXISTS watered_schedule (
