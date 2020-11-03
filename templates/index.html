@@ -34,6 +34,30 @@
                     </div>
 
                 </div>
+                <div class='w3-col'>
+                    <div class='w3-card-4 w3-margin w3-white'>
+                        <div class='w3-container w3-cell' style = 'padding: 10px'>
+                          <table>
+                            <tr>
+                              <th>Date</th>
+                              <th>Voltage</th>
+                            </tr>
+                            {% for date in dates %}
+                            <tr>
+                              <td>{{ date }}</td>
+                              <td>{{ voltages[loop.index0] }}</td>
+                            </tr>
+                            {% endfor %}
+                          </table>
+                        </div>
+                          <div class="w3-container w3-cell" style="width: 50%">
+                            <p>
+                              {{ dates }}
+                              {{ voltages }}
+                            </p>
+                          </div>
+                    </div>
+                </div>
 
                 <div class='w3-col'>
                     <div class='w3-card-4 w3-margin w3-white'>
@@ -52,9 +76,9 @@
         var line_chart = new Chart('line-chart', {
                 type: 'line',
                 data: {
-                    labels: {{ x_axis_dates | safe }},
+                    labels: {{ dates | safe }},
                     datasets: [{
-                        data: {{ graph_data }},
+                        data: {{ voltages }},
                         label: 'Moisture Level',
                         fill: false,
                         borderWidth: 3,

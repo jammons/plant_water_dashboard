@@ -70,33 +70,31 @@ def last_time_watered():
 
 @app.route('/graph_data')
 def graph_logic():
-    database_data = []
-    x_axis_dates = []
-    start_date = datetime.now() - timedelta(days = GRAPH_LENGTH)
-
     with sqlite3.connect(DATABASE_LOGIN) as connection:
         cursor = connection.cursor()
+        days_back = 10
+        template = f"SELECT DISTINCT date, voltage FROM schedule WHERE date BETWEEN DATETIME('NOW', '-' || ? || ' DAYS') AND DATETIME('NOW') ORDER BY date desc limit 20"
+        cursor.execute(template, [days_back])
+        results = cursor.fetchall()
+        # [('2020-11-01 22:23:46', 0.0), ('2020-11-02 22:14:07', 4.122), ('2020-11-02 22:15:26', 4.143)]
 
-        for i in range(GRAPH_LENGTH):
-            date = (start_date + timedelta(days = i)).strftime('%Y-%m-%d')
-            x_axis_dates.append(date)
-            
-            template = (f"SELECT voltage FROM schedule WHERE date(date) = ?")
-            cursor.execute(template, [date])
-            
-            database_data.append(cursor.fetchone())
+        x_axis = [row[0] for row in results]
+        y_axis = [row[1] for row in results]
 
-        return x_axis_dates, database_data
+        # convert string datetimes to ordinal for regression
+        x_axis = pd.to_datetime(x_axis, format="%Y-%m-%d %H:%M:%S")
+
+        return x_axis, y_axis
 
 @app.route('/')
 def return_index():
-    x_axis_dates, graph_data = graph_logic()
+    dates, voltages = graph_logic()
 
     args = {
         'last_time_watered' : last_time_watered(),
         'next_water_due'    : next_water_due(),
-        'x_axis_dates' : x_axis_dates,
-        'graph_data' : graph_data
+        'dates' : dates,
+        'voltages' : voltages,
     }
 
     return render_template('index.html', **args)
